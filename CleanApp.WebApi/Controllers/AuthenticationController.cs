@@ -19,6 +19,7 @@ namespace CleanApp.Api.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
+
             var authResult = _authenticationService?.Register(
                 FirstName: request.FirstName,
                 LastName: request.LastName,
