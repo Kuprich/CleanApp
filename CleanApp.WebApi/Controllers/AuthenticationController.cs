@@ -33,9 +33,9 @@ namespace CleanApp.Api.Controllers
 
             AuthenticationResponse response = new(
                 Id: Guid.NewGuid(),
-                FirstName: authResult.FirstName,
-                LastName: authResult.LastName,
-                Email: authResult.Email,
+                FirstName: authResult.User.FirstName,
+                LastName: authResult.User.LastName,
+                Email: authResult.User.Email,
                 Token: authResult.Token);
 
             return Ok(response);
@@ -56,9 +56,9 @@ namespace CleanApp.Api.Controllers
 
             AuthenticationResponse response = new(
                 Id: Guid.NewGuid(),
-                FirstName: authResult.FirstName,
-                LastName: authResult.LastName,
-                Email: authResult.Email,
+                FirstName: authResult.User.FirstName,
+                LastName: authResult.User.LastName,
+                Email: authResult.User.Email,
                 Token: authResult.Token);
 
             return Ok(response);

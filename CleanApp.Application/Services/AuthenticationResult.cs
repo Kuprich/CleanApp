@@ -1,9 +1,8 @@
-﻿namespace CleanApp.Application.Services;
+﻿using CleanApp.Domain.Entities;
+
+namespace CleanApp.Application.Services;
 
 public record AuthenticationResult(
-    Guid Id,
-    string FirstName,
-    string LastName,
-    string Email,
+    User User,
     string Token);
 

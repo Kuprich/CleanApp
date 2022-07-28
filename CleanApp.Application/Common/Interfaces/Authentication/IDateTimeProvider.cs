@@ -1,4 +1,4 @@
-﻿namespace CleanApp.Application.Common.Interfaces;
+﻿namespace CleanApp.Application.Common.Interfaces.Authentication;
 
 public interface IDateTimeProvider
 {

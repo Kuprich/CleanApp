@@ -1,4 +1,4 @@
-﻿using CleanApp.Application.Common.Interfaces;
+﻿using CleanApp.Application.Common.Interfaces.Authentication;
 
 namespace CleanApp.Infrastructure.Services;
 

@@ -1,4 +1,5 @@
-﻿using CleanApp.Application.Common.Interfaces;
+﻿using CleanApp.Application.Common.Interfaces.Services;
+using CleanApp.Application.Common.Persistence;
 
 namespace CleanApp.Application.Services;
 
@@ -6,40 +7,64 @@ public class AuthenticationService : IAuthenticationService
 {
 
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IUserRepository _userRepository;
 
-    public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator)
+    public AuthenticationService(
+        IJwtTokenGenerator jwtTokenGenerator,
+        IUserRepository userRepository)
     {
         _jwtTokenGenerator = jwtTokenGenerator;
+        _userRepository = userRepository;
     }
 
-    public AuthenticationResult Login(string Email, string Password)
+    public AuthenticationResult Login(string email, string password)
     {
-        return new AuthenticationResult(
-            Id: Guid.NewGuid(),
-            FirstName: "FirstName",
-            LastName: "LastName",
-            Email: Email,
-            Token: "token"
-        );
+        //1. Validate the user exists
+        var user = _userRepository.GetUserByEmail(email);
+
+        if (user == null)
+        {
+            throw new Exception("user with given Email doesn't exist");
+        }
+
+        //2. Validate user password
+        if (user.Password != password)
+        {
+            throw new Exception("Password inccorrect");
+        }
+
+        var jwtToken = _jwtTokenGenerator.GenerateJwtToken(user);
+
+        return new AuthenticationResult(user, jwtToken);
     }
 
     public AuthenticationResult Register(string FirstName, string LastName, string Email, string Password)
     {
 
-        //check if user already exists 
+        //1. Check if user doesn't exist
+        var user = _userRepository.GetUserByEmail(Email);
 
-        //create user (generate unique ID)
+        if (user != null)
+        {
+            throw new Exception("user with given Email already exists");
+        }
 
-        //generate JWT token
-        var jwtToken = _jwtTokenGenerator.GenerateJwtToken(userId: Guid.NewGuid(), FirstName, LastName);
+        //2. Create user (generate unique ID)
 
-        return new AuthenticationResult(
-            Id: Guid.NewGuid(),
-            FirstName: FirstName,
-            LastName: LastName,
-            Email: Email,
-            Token: jwtToken
-        );
+        user = new()
+        {
+            FirstName = FirstName,
+            LastName = LastName,
+            Email = Email,
+            Password = Password
+        };
+
+        _userRepository.Add(user);
+
+        //3. Generate JWT token
+        var jwtToken = _jwtTokenGenerator.GenerateJwtToken(user);
+
+        return new AuthenticationResult(user, jwtToken);
     }
 }
 
