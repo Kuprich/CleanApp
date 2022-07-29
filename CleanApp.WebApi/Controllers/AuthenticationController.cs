@@ -1,4 +1,5 @@
-﻿using CleanApp.Application.Services;
+﻿using CleanApp.Api.Filters;
+using CleanApp.Application.Services;
 using CleanApp.Contracts.Authentication;
 
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ namespace CleanApp.Api.Controllers
 {
     [Route("auth")]
     [ApiController]
+    //[ErrorHandlingFilter]
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;
