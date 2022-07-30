@@ -1,5 +1,7 @@
 ﻿using CleanApp.Application.Common.Interfaces.Services;
 using CleanApp.Application.Common.Persistence;
+using CleanApp.Domain.Common.Errors;
+using ErrorOr;
 
 namespace CleanApp.Application.Services;
 
@@ -17,20 +19,20 @@ public class AuthenticationService : IAuthenticationService
         _userRepository = userRepository;
     }
 
-    public AuthenticationResult Login(string email, string password)
+    public ErrorOr<AuthenticationResult> Login(string email, string password)
     {
         //1. Validate the user exists
         var user = _userRepository.GetUserByEmail(email);
 
         if (user == null)
         {
-            throw new Exception("user with given Email doesn't exist");
+            return Errors.Authentiaction.InvalidCredentials;
         }
 
         //2. Validate user password
         if (user.Password != password)
         {
-            throw new Exception("Password inccorrect");
+            return Errors.Authentiaction.InvalidCredentials;
         }
 
         var jwtToken = _jwtTokenGenerator.GenerateJwtToken(user);
@@ -38,7 +40,7 @@ public class AuthenticationService : IAuthenticationService
         return new AuthenticationResult(user, jwtToken);
     }
 
-    public AuthenticationResult Register(string FirstName, string LastName, string Email, string Password)
+    public ErrorOr<AuthenticationResult> Register(string FirstName, string LastName, string Email, string Password)
     {
 
         //1. Check if user doesn't exist
@@ -46,7 +48,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (user != null)
         {
-            throw new Exception("user with given Email already exists");
+            return Errors.User.DublicateEmail;
         }
 
         //2. Create user (generate unique ID)

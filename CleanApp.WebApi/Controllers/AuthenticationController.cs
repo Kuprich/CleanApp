@@ -1,15 +1,12 @@
-﻿using CleanApp.Api.Filters;
-using CleanApp.Application.Services;
+﻿using CleanApp.Application.Services;
 using CleanApp.Contracts.Authentication;
-
+using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanApp.Api.Controllers
 {
     [Route("auth")]
-    [ApiController]
-    //[ErrorHandlingFilter]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController : ApiController
     {
         private readonly IAuthenticationService _authenticationService;
 
@@ -22,48 +19,41 @@ namespace CleanApp.Api.Controllers
         public IActionResult Register(RegisterRequest request)
         {
 
-            var authResult = _authenticationService?.Register(
+            ErrorOr<AuthenticationResult> authServiceResult = _authenticationService.Register(
                 FirstName: request.FirstName,
                 LastName: request.LastName,
                 Email: request.Email,
                 Password: request.Password);
 
-            if (authResult == null)
-            {
-                return BadRequest();
-            }
 
-            AuthenticationResponse response = new(
+            return authServiceResult.Match(
+                authResult => Ok(MapAuthResult(authResult)),
+                errors => Problem(errors));
+
+        }
+
+        private static AuthenticationResponse MapAuthResult(AuthenticationResult authResult)
+        {
+            return new(
                 Id: Guid.NewGuid(),
                 FirstName: authResult.User.FirstName,
                 LastName: authResult.User.LastName,
                 Email: authResult.User.Email,
                 Token: authResult.Token);
-
-            return Ok(response);
         }
 
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
 
-            var authResult = _authenticationService?.Login(
+            ErrorOr<AuthenticationResult> authServiceResult = _authenticationService.Login(
                 Email: request.Email,
                 Password: request.Password);
 
-            if (authResult == null)
-            {
-                return BadRequest();
-            }
+            return authServiceResult.Match(
+               registerResult => Ok(MapAuthResult(registerResult)),
+               errors => Problem(errors));
 
-            AuthenticationResponse response = new(
-                Id: Guid.NewGuid(),
-                FirstName: authResult.User.FirstName,
-                LastName: authResult.User.LastName,
-                Email: authResult.User.Email,
-                Token: authResult.Token);
-
-            return Ok(response);
         }
     }
 }
