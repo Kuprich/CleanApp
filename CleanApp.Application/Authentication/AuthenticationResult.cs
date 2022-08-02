@@ -1,6 +1,6 @@
 ﻿using CleanApp.Domain.Entities;
 
-namespace CleanApp.Application.Services;
+namespace CleanApp.Application.Authentication;
 
 public record AuthenticationResult(
     User User,

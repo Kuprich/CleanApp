@@ -1,11 +1,12 @@
+using CleanApp.Api;
 using CleanApp.Application;
 using CleanApp.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 {
+    builder.Services.AddPresentation();
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
-    builder.Services.AddControllers();
 }
 
 

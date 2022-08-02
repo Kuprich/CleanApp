@@ -1,6 +1,8 @@
-﻿using CleanApp.Application.Services;
+﻿using CleanApp.Application.Authentication.Commands.Register;
+using CleanApp.Application.Authentication.Queries.Login;
 using CleanApp.Contracts.Authentication;
-using ErrorOr;
+using MapsterMapper;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanApp.Api.Controllers
@@ -8,50 +10,40 @@ namespace CleanApp.Api.Controllers
     [Route("auth")]
     public class AuthenticationController : ApiController
     {
-        private readonly IAuthenticationService _authenticationService;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
+
+        public AuthenticationController(IMediator mediator, IMapper mapper)
         {
-            _authenticationService = authenticationService;
+            _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterRequest request)
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
 
-            ErrorOr<AuthenticationResult> authServiceResult = _authenticationService.Register(
-                FirstName: request.FirstName,
-                LastName: request.LastName,
-                Email: request.Email,
-                Password: request.Password);
+            var registerCommand = _mapper.Map<RegisterCommand>(request);
 
+            var authResult = await _mediator.Send(registerCommand);
 
-            return authServiceResult.Match(
-                authResult => Ok(MapAuthResult(authResult)),
+            return authResult.Match(
+                authResult => Ok(_mapper.Map<AuthenticationResponse>(authResult)),
                 errors => Problem(errors));
-
         }
 
-        private static AuthenticationResponse MapAuthResult(AuthenticationResult authResult)
-        {
-            return new(
-                Id: Guid.NewGuid(),
-                FirstName: authResult.User.FirstName,
-                LastName: authResult.User.LastName,
-                Email: authResult.User.Email,
-                Token: authResult.Token);
-        }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
 
-            ErrorOr<AuthenticationResult> authServiceResult = _authenticationService.Login(
-                Email: request.Email,
-                Password: request.Password);
+            var loginQuery = _mapper.Map<LoginQuery>(request);
 
-            return authServiceResult.Match(
-               registerResult => Ok(MapAuthResult(registerResult)),
+            var authResult = await _mediator.Send(loginQuery);
+
+            return authResult.Match(
+               authResult => Ok(_mapper.Map<AuthenticationResponse>(authResult)),
                errors => Problem(errors));
 
         }
